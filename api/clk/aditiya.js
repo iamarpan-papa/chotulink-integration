@@ -1,6 +1,5 @@
-// api/clk/generate.js
+// api/clk/aditiya.js
 
-const crypto = require("crypto");
 const axios = require("axios");
 
 module.exports = async (req, res) => {
@@ -16,116 +15,49 @@ module.exports = async (req, res) => {
   try {
 
     const {
-      keyId,
-      secret,
+      apiKey,
+      product_id,
+      product_slug,
       duration_id,
+      duration_days,
       quantity
     } = req.body;
 
-    const bodyObj = {
+    if (!apiKey) {
+      return res.status(400).json({
+        success: false,
+        error: "apiKey missing"
+      });
+    }
 
-      duration_id:
-        Number(duration_id),
+    const bodyObj = {};
 
-      quantity:
-        Number(quantity || 1)
+    if (product_id) bodyObj.product_id = Number(product_id);
+    if (product_slug) bodyObj.product_slug = product_slug;
+    if (duration_id) bodyObj.duration_id = Number(duration_id);
+    if (duration_days) bodyObj.duration_days = Number(duration_days);
 
-    };
+    bodyObj.quantity = Number(quantity || 1);
 
-    const body =
-      JSON.stringify(bodyObj);
+    const response = await axios.post(
 
-    const ts =
-      Math.floor(
-        Date.now() / 1000
-      ).toString();
+      "https://adityareseller.shop/aditya/api/reseller/generate.php",
 
-    const nonce =
-      crypto
-        .randomBytes(16)
-        .toString("hex");
+      bodyObj,
 
-    const path =
-      "/api/v1/reseller/x/generate.php";
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "X-Api-Key": apiKey
+        },
+        timeout: 20000
+      }
 
-    const bodyHash =
-      crypto
-        .createHash("sha256")
-        .update(body)
-        .digest("hex");
-
-    const signMessage =
-
-      "POST\n" +
-      path + "\n" +
-      ts + "\n" +
-      nonce + "\n" +
-      bodyHash;
-
-    const signature =
-      crypto
-        .createHmac(
-          "sha256",
-          Buffer.from(
-            secret,
-            "hex"
-          )
-        )
-        .update(signMessage)
-        .digest("hex");
-
-    const response =
-      await axios.post(
-
-        "https://chotulink.online" +
-        path,
-
-        bodyObj,
-
-        {
-
-          headers: {
-
-            "Content-Type":
-              "application/json",
-
-            "X-Api-Key":
-              keyId,
-
-            "X-Api-Timestamp":
-              ts,
-
-            "X-Api-Nonce":
-              nonce,
-
-            "X-Api-Signature":
-              signature
-
-          }
-
-        }
-
-      );
+    );
 
     return res.json({
 
       success: true,
-
-      debug: {
-
-        timestamp:
-          ts,
-
-        nonce:
-          nonce,
-
-        bodyHash:
-          bodyHash,
-
-        signature:
-          signature
-
-      },
 
       response:
         response.data
