@@ -16,10 +16,7 @@ module.exports = async (req, res) => {
 
     const {
       apiKey,
-      product_id,
-      product_slug,
       duration_id,
-      duration_days,
       quantity
     } = req.body;
 
@@ -30,14 +27,10 @@ module.exports = async (req, res) => {
       });
     }
 
-    const bodyObj = {};
-
-    if (product_id) bodyObj.product_id = Number(product_id);
-    if (product_slug) bodyObj.product_slug = product_slug;
-    if (duration_id) bodyObj.duration_id = Number(duration_id);
-    if (duration_days) bodyObj.duration_days = Number(duration_days);
-
-    bodyObj.quantity = Number(quantity || 1);
+    const bodyObj = {
+      duration_id: Number(duration_id),
+      quantity: Number(quantity || 1)
+    };
 
     const response = await axios.post(
 
